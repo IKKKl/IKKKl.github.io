@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>睡眠质量评估与改善</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --accent-color: #9b59b6;
+            --light-color: #ecf0f1;
+            --dark-color: #1a2530;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: var(--light-color);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--light-color);
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+        }
+        
+        .card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: var(--light-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .card-title i {
+            margin-right: 10px;
+            color: var(--secondary-color);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--light-color);
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .sleep-score {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .score-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: conic-gradient(var(--success-color) 0% 75%, var(--warning-color) 75% 90%, var(--danger-color) 90% 100%);
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .sleep-data {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .data-item {
+            text-align: center;
+            padding: 15px;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .data-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .data-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        .chart-container {
+            height: 300px;
+            margin-top: 20px;
+        }
+        
+        .tips-list {
+            list-style-type: none;
+        }
+        
+        .tips-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+        }
+        
+        .tips-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .tips-list i {
+            margin-right: 10px;
+            color: var(--accent-color);
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .history-table th, .history-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .history-table th {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-good {
+            background-color: var(--success-color);
+        }
+        
+        .status-fair {
+            background-color: var(--warning-color);
+        }
+        
+        .status-poor {
+            background-color: var(--danger-color);
+        }
+        
+        footer {
+            text-align: center;
+            padding: 30px 0;
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+        
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .sleep-data {
+                flex-direction: column;
+            }
+            
+            .data-item {
+                margin-bottom: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>睡眠质量评估</h1>
+            <p class="subtitle">记录、分析并改善您的睡眠质量</p>
+        </header>
+        
+        <div class="grid">
+            <div class="card">
+                <h2 class="card-title"><i>📝</i> 记录睡眠</h2>
+                <form id="sleep-form">
+                    <div class="form-group">
+                        <label for="sleep-date">日期</label>
+                        <input type="date" id="sleep-date" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="bedtime">上床时间</label>
+                        <input type="time" id="bedtime" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="waketime">起床时间</label>
+                        <input type="time" id="waketime" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sleep-quality">主观睡眠质量 (1-10分)</label>
+                        <input type="range" id="sleep-quality" min="1" max="10" value="7">
+                        <div style="display: flex; justify-content: space-between;">
+                            <span>1 (很差)</span>
+                            <span id="quality-value">7</span>
+                            <span>10 (很好)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="awake-count">夜间醒来次数</label>
+                        <input type="number" id="awake-count" min="0" max="20" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="notes">备注</label>
+                        <textarea id="notes" rows="3" placeholder="记录任何可能影响睡眠的因素..."></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-block">保存记录</button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title"><i>📊</i> 睡眠分析</h2>
+                <div class="sleep-score">
+                    <div class="score-circle">82</div>
+                    <h3>睡眠质量评分</h3>
+                    <p>良好 - 继续保持!</p>
+                </div>
+                
+                <div class="sleep-data">
+                    <div class="data-item">
+                        <div class="data-value">7.5h</div>
+                        <div class="data-label">睡眠时长</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-value">2</div>
+                        <div class="data-label">醒来次数</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-value">94%</div>
+                        <div class="data-label">睡眠效率</div>
+                    </div>
+                </div>
+                
+                <div class="chart-container">
+                    <canvas id="sleep-chart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <div class="grid">
+            <div class="card">
+                <h2 class="card-title"><i>💡</i> 改善建议</h2>
+                <ul class="tips-list">
+                    <li><i>🌙</i> 保持规律的睡眠时间表，即使在周末</li>
+                    <li><i>📵</i> 睡前1小时避免使用电子设备</li>
+                    <li><i>☕</i> 下午晚些时候避免摄入咖啡因</li>
+                    <li><i>🏃</i> 定期锻炼，但避免在睡前剧烈运动</li>
+                    <li><i>🛀</i> 睡前洗个温水澡帮助放松</li>
+                    <li><i>🌡️</i> 保持卧室凉爽、黑暗和安静</li>
+                    <li><i>🧘</i> 尝试冥想或深呼吸练习来放松身心</li>
+                </ul>
+            </div>
+            
+            <div class="card">
+                <h2 class="card-title"><i>📈</i> 睡眠历史</h2>
+                <div class="table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>日期</th>
+                                <th>睡眠时长</th>
+                                <th>质量评分</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>2023-10-15</td>
+                                <td>7h 30m</td>
+                                <td>85</td>
+                                <td><span class="status-indicator status-good"></span>良好</td>
+                            </tr>
+                            <tr>
+                                <td>2023-10-14</td>
+                                <td>6h 45m</td>
+                                <td>72</td>
+                                <td><span class="status-indicator status-fair"></span>一般</td>
+                            </tr>
+                            <tr>
+                                <td>2023-10-13</td>
+                                <td>8h 15m</td>
+                                <td>90</td>
+                                <td><span class="status-indicator status-good"></span>良好</td>
+                            </tr>
+                            <tr>
+                                <td>2023-10-12</td>
+                                <td>5h 20m</td>
+                                <td>58</td>
+                                <td><span class="status-indicator status-poor"></span>较差</td>
+                            </tr>
+                            <tr>
+                                <td>2023-10-11</td>
+                                <td>7h 05m</td>
+                                <td>78</td>
+                                <td><span class="status-indicator status-fair"></span>一般</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>© 2023 睡眠质量评估工具 | 数据仅存储在您的浏览器中</p>
+        </footer>
+    </div>
+
+    <script>
+        // 更新睡眠质量滑块的值显示
+        const qualitySlider = document.getElementById('sleep-quality');
+        const qualityValue = document.getElementById('quality-value');
+        
+        qualitySlider.addEventListener('input', function() {
+            qualityValue.textContent = this.value;
+        });
+        
+        // 处理表单提交
+        document.getElementById('sleep-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            alert('睡眠记录已保存！在实际应用中，这里会将数据保存到数据库。');
+            // 在实际应用中，这里会保存数据并更新UI
+        });
+        
+        // 初始化睡眠图表
+        const ctx = document.getElementById('sleep-chart').getContext('2d');
+        const sleepChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['10-11', '10-12', '10-13', '10-14', '10-15', '10-16', '10-17'],
+                datasets: [{
+                    label: '睡眠质量评分',
+                    data: [78, 58, 90, 72, 85, 82, 0],
+                    borderColor: '#3498db',
+                    backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        },
+                        ticks: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: 'rgba(255, 255, 255, 0.7)'
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
